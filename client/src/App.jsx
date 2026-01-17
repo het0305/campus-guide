@@ -17,7 +17,7 @@ import Contact from './pages/Contact'
 
 export default function App(){
   return (
-    <div>
+    <div style={{ width: "100vw", overflowX: "hidden" }}>
       <NavBar />
       <main style={{padding:'1rem'}}>
         <Routes>

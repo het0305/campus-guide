@@ -3,3 +3,16 @@
 .brand a{font-weight:700;color:#fff}
 .links a{margin-left:1rem;color:#fff;transition:transform .15s ease, color .15s ease}
 .links a.active{color:#ffd700;transform:translateY(-3px);font-weight:700}
+.nav {
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
