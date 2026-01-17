@@ -1,0 +1,4 @@
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:#f5f5f5;color:#222}
+main{max-width:960px;margin:1rem auto;background:#fff;padding:1rem;border-radius:6px}
+a{color:#0077cc;text-decoration:none}

@@ -1,0 +1,5 @@
+.nav{background:#004b87;color:#fff;padding:.5rem}
+.nav-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.brand a{font-weight:700;color:#fff}
+.links a{margin-left:1rem;color:#fff;transition:transform .15s ease, color .15s ease}
+.links a.active{color:#ffd700;transform:translateY(-3px);font-weight:700}

@@ -1,0 +1,12 @@
+.event-card {
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: #f9fafb;
+  transition: 0.2s ease;
+}
+
+.event-card:hover {
+  background: #f1f5f9;
+}
