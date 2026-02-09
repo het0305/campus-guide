@@ -1,0 +1,115 @@
+/* PAGE BACKGROUND */
+.feedback-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  overflow: hidden;
+}
+
+/* GLASS CARD */
+.glass-card {
+  width: 420px;
+  padding: 45px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+  text-align: center;
+  color: white;
+  animation: floatIn 0.8s ease;
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(60px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.glass-card h1 {
+  font-size: 34px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  opacity: 0.8;
+  margin-bottom: 35px;
+}
+
+/* INPUTS */
+.input-box {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.input-box input,
+.input-box textarea {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 8px;
+  outline: none;
+  color: white;
+  font-size: 14px;
+}
+
+.input-box label {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: 0.3s;
+  opacity: 0.7;
+}
+
+.input-box input:focus + label,
+.input-box textarea:focus + label,
+.input-box input:valid + label,
+.input-box textarea:valid + label {
+  top: -7px;
+  background: #203a43;
+  font-size: 11px;
+  padding: 0 6px;
+  opacity: 1;
+}
+
+/* BUTTON */
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 40px;
+  background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+/* SUCCESS */
+.success {
+  font-size: 22px;
+  color: #7CFF6B;
+  animation: pop 0.6s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); }
+  100% { transform: scale(1); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 500px) {
+  .glass-card {
+    width: 100%;
+    padding: 30px;
+  }
+}

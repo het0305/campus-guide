@@ -16,15 +16,5 @@ router.post('/register', async (req, res) => {
   res.status(201).json({ ok: true });
 });
 
-// Login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  const u = await User.findOne({ email });
-  if (!u) return res.status(400).json({ error: 'Invalid' });
-  const ok = await bcrypt.compare(password, u.password);
-  if (!ok) return res.status(400).json({ error: 'Invalid' });
-  const token = jwt.sign({ id: u._id, role: u.role, name: u.name }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '8h' });
-  res.json({ token, role: u.role, name: u.name });
-});
 
 module.exports = router;

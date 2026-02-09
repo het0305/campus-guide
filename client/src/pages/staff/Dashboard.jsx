@@ -23,10 +23,7 @@ export default function StaffDashboard() {
       <hr style={{ margin: "20px 0" }} />
 
       <div style={{ display: "flex", gap: 15, flexWrap: "wrap" }}>
-        {/* Attendance */}
-        <Link to="/staff/attendance" style={cardStyle}>
-          📊 Attendance
-        </Link>
+        {/* Attendance (removed) */}
 
         {/* Create Event */}
         <Link to="/staff/create-event" style={cardStyle}>

@@ -1,0 +1,132 @@
+/* Page Container */
+.auditoriums {
+  padding: 30px;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #f4f7ff, #eef2ff);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* Title */
+.auditoriums h2 {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 25px;
+  color: #2b2f77;
+}
+
+/* Table Wrapper Card */
+.auditoriums table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+/* Header */
+.auditoriums thead {
+  background: linear-gradient(90deg, #5b5fdc, #7c7cff);
+}
+
+.auditoriums th {
+  padding: 16px;
+  text-align: left;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Body Cells */
+.auditoriums td {
+  padding: 15px 16px;
+  font-size: 15px;
+  color: #333;
+  border-bottom: 1px solid #ececff;
+}
+
+/* Zebra Striping */
+.auditoriums tbody tr:nth-child(even) {
+  background: #f9faff;
+}
+
+/* Hover Animation */
+.auditoriums tbody tr {
+  transition: all 0.25s ease;
+}
+
+.auditoriums tbody tr:hover {
+  background: #eef1ff;
+  transform: scale(1.01);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+}
+
+/* Capacity Badge */
+.auditoriums td:nth-child(2) {
+  font-weight: 600;
+  color: #4b50d8;
+}
+
+/* Location Pill */
+.auditoriums td:nth-child(3) {
+  font-weight: 500;
+}
+
+.auditoriums td:nth-child(3)::before {
+  content: "📍 ";
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .auditoriums {
+    padding: 15px;
+  }
+
+  .auditoriums h2 {
+    font-size: 24px;
+  }
+
+  .auditoriums table,
+  .auditoriums thead,
+  .auditoriums tbody,
+  .auditoriums th,
+  .auditoriums td,
+  .auditoriums tr {
+    display: block;
+  }
+
+  .auditoriums thead {
+    display: none;
+  }
+
+  .auditoriums tr {
+    margin-bottom: 15px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+    padding: 10px;
+  }
+
+  .auditoriums td {
+    border: none;
+    padding: 8px 10px;
+  }
+
+  .auditoriums td::before {
+    font-weight: 600;
+    color: #666;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .auditoriums td:nth-child(1)::before { content: "Hall Name"; }
+  .auditoriums td:nth-child(2)::before { content: "Capacity"; }
+  .auditoriums td:nth-child(3)::before { content: "Location"; }
+}

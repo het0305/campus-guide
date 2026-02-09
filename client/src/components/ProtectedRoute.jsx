@@ -5,7 +5,7 @@ import { getToken, getRole } from '../utils/auth'
 export default function ProtectedRoute({ children, requiredRole }){
   const token = getToken()
   const role = getRole()
-  if (!token) return <Navigate to="/login" replace />
-  if (requiredRole && role !== requiredRole) return <Navigate to="/login" replace />
+  if (!token) return <Navigate to="/" replace />
+  if (requiredRole && role !== requiredRole) return <Navigate to="/" replace />
   return children
 }
