@@ -35,3 +35,27 @@
 .icon {
   color: #ff5fa2;
 }
+
+.contact-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #6b7280;
+  background: #111827;
+  color: white;
+}
+
+.contact-input:focus {
+  outline: none;
+  border-color: #ff5fa2;
+}
+
+.contact-save-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg,#ff5fa2,#7c3aed);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}

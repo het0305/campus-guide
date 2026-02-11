@@ -53,6 +53,41 @@
   cursor: pointer;
 }
 
+/* ===== EVENTS LIST UI ===== */
+
+.events-page {
+  padding: 24px;
+}
+
+.events-page h1 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.events-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.event-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+.event-card h3 {
+  margin: 0 0 8px;
+}
+
+.event-card .meta {
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
 /* MOBILE */
 
 @media(max-width:768px){

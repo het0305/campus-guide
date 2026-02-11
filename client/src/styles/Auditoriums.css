@@ -83,6 +83,51 @@
   content: "📍 ";
 }
 
+/* Admin add box */
+.hall-admin-box {
+  max-width: 900px;
+  margin: 0 auto 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  padding: 16px;
+}
+
+.hall-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  gap: 12px;
+}
+
+.hall-input {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.hall-input:focus {
+  border-color: #4b50d8;
+  outline: none;
+}
+
+.hall-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.hall-add-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg,#5b5fdc,#7c7cff);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .auditoriums {
@@ -129,4 +174,8 @@
   .auditoriums td:nth-child(1)::before { content: "Hall Name"; }
   .auditoriums td:nth-child(2)::before { content: "Capacity"; }
   .auditoriums td:nth-child(3)::before { content: "Location"; }
+
+  .hall-grid {
+    grid-template-columns: 1fr;
+  }
 }

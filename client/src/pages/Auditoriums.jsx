@@ -45,11 +45,15 @@ export default function Auditoriums(){
       <h2>Auditoriums / Halls</h2>
 
       {role === 'admin' && (
-        <div style={{marginBottom:12}}>
-          <input placeholder="Name" value={newHall.name} onChange={e=>setNewHall({...newHall, name: e.target.value})} />
-          <input placeholder="Capacity" value={newHall.capacity} onChange={e=>setNewHall({...newHall, capacity: e.target.value})} />
-          <input placeholder="Location" value={newHall.location} onChange={e=>setNewHall({...newHall, location: e.target.value})} />
-          <button onClick={addHall}>Add Hall</button>
+        <div className="hall-admin-box">
+          <div className="hall-grid">
+            <input className="hall-input" placeholder="Hall name" value={newHall.name} onChange={e=>setNewHall({...newHall, name: e.target.value})} />
+            <input className="hall-input" placeholder="Capacity" value={newHall.capacity} onChange={e=>setNewHall({...newHall, capacity: e.target.value})} />
+            <input className="hall-input" placeholder="Location" value={newHall.location} onChange={e=>setNewHall({...newHall, location: e.target.value})} />
+          </div>
+          <div className="hall-actions">
+            <button className="hall-add-btn" onClick={addHall}>Add Auditorium</button>
+          </div>
         </div>
       )}
 

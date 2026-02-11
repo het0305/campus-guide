@@ -43,9 +43,14 @@ export default function Departments(){
       <h1>Departments</h1>
 
       {role === 'admin' && (
-        <div style={{marginBottom:12}}>
-          <input placeholder="New department" value={newName} onChange={e=>setNewName(e.target.value)} />
-          <button onClick={addDept}>Add</button>
+        <div className="dept-admin-add">
+          <input
+            className="dept-input"
+            placeholder="New department name"
+            value={newName}
+            onChange={e=>setNewName(e.target.value)}
+          />
+          <button className="dept-add-btn" onClick={addDept}>Add Department</button>
         </div>
       )}
 

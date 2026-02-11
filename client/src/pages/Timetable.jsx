@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Timetable.css";
 import axios from "axios";
 import { getRole, getToken } from "../utils/auth";
@@ -102,41 +102,106 @@ export default function Timetable() {
   const [staffList, setStaffList] = useState(initialStaffList);
   const role = getRole();
   const token = getToken();
+  // Use /api so Vite proxy works (visitor requests succeed); override with VITE_API_BASE if set
+  const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+  // Load timetables from server so visitor sees same data as admin; refetch when page is focused
+  const fetchTimetables = React.useCallback(async () => {
+    try {
+      const stu = await axios.get(`${API_BASE}/timetable/student`, { headers });
+      if (Array.isArray(stu.data) && stu.data.length > 0) {
+        const mapped = {};
+        stu.data.forEach((doc) => {
+          const serverData = doc.data || {};
+          if (serverData && typeof serverData === "object" && Object.keys(serverData).length > 0) {
+            mapped[doc.semKey] = {
+              label: doc.label || doc.semKey,
+              image: doc.image || "",
+              data: serverData
+            };
+          }
+        });
+        if (Object.keys(mapped).length > 0) {
+          setStudentTimetables((s) => ({ ...s, ...mapped }));
+        }
+      }
+    } catch (e) {
+      console.warn("Timetable student fetch failed:", e?.message || e);
+    }
+    try {
+      const staffRes = await axios.get(`${API_BASE}/timetable/staff`, { headers });
+      if (Array.isArray(staffRes.data) && staffRes.data.length > 0) {
+        const mapped = staffRes.data
+          .map((doc) => {
+            const tt = doc.timetable || {};
+            if (!tt || typeof tt !== "object" || Object.keys(tt).length === 0) return null;
+            return {
+              id: doc.staffId,
+              name: doc.name || `Staff ${doc.staffId}`,
+              photo: doc.photo || "https://via.placeholder.com/80",
+              timetable: tt
+            };
+          })
+          .filter(Boolean);
+        if (mapped.length > 0) {
+          setStaffList((prev) => {
+            const byId = Object.fromEntries(prev.map((p) => [p.id, p]));
+            mapped.forEach((m) => {
+              byId[m.id] = { ...(byId[m.id] || {}), ...m };
+            });
+            return Object.values(byId);
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Timetable staff fetch failed:", e?.message || e);
+    }
+  }, [API_BASE, token]);
+
+  useEffect(() => {
+    fetchTimetables();
+  }, [fetchTimetables]);
+
   const updateStudentSlot = async (semKey, day, index, value) => {
     if (role !== "admin") return alert("Only admins can edit timetables");
-    // update local state first
+    let fullDataAfter;
     setStudentTimetables((s) => {
       const copy = { ...s };
       copy[semKey] = { ...copy[semKey], data: { ...copy[semKey].data } };
-      copy[semKey].data[day] = [...copy[semKey].data[day]];
+      copy[semKey].data[day] = [...(copy[semKey].data[day] || [])];
+      while (copy[semKey].data[day].length <= index) copy[semKey].data[day].push("—");
       copy[semKey].data[day][index] = value;
+      fullDataAfter = copy[semKey].data;
       return copy;
     });
-    // optionally send to server
     try {
-      await axios.put(`/api/timetable/student/${semKey}`, { day, index, value }, { headers });
+      await axios.put(`${API_BASE}/timetable/student/${semKey}`, { day, index, value, fullData: fullDataAfter }, { headers });
     } catch (err) {
-      // ignore server errors for now
+      console.warn("Timetable save failed:", err?.message || err);
     }
   };
 
   const updateStaffSlot = async (staffId, day, index, value) => {
     if (role !== "admin") return alert("Only admins can edit timetables");
+    let fullTimetableAfter;
     setStaffList((s) => {
       return s.map((st) => {
         if (st.id !== staffId) return st;
         const copy = { ...st, timetable: { ...st.timetable } };
-        copy.timetable[day] = [...copy.timetable[day]];
+        copy.timetable[day] = [...(copy.timetable[day] || [])];
+        while (copy.timetable[day].length <= index) copy.timetable[day].push("—");
         copy.timetable[day][index] = value;
+        fullTimetableAfter = copy.timetable;
         return copy;
       });
     });
     try {
-      await axios.put(`/api/timetable/staff/${staffId}`, { day, index, value }, { headers });
-    } catch (err) {}
+      await axios.put(`${API_BASE}/timetable/staff/${staffId}`, { day, index, value, fullData: fullTimetableAfter }, { headers });
+    } catch (err) {
+      console.warn("Timetable save failed:", err?.message || err);
+    }
   };
 
   const deleteStaff = async (staffId) => {
@@ -144,13 +209,18 @@ export default function Timetable() {
     if (!confirm("Delete this staff timetable?")) return;
     setStaffList((s) => s.filter((st) => st.id !== staffId));
     try {
-      await axios.delete(`/api/timetable/staff/${staffId}`, { headers });
+      await axios.delete(`${API_BASE}/timetable/staff/${staffId}`, { headers });
     } catch (err) {}
   };
 
   return (
     <div className="page">
-      <h2>📅 Timetable Portal</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+        <h2>📅 Timetable Portal</h2>
+        <button type="button" className="back-btn" onClick={fetchTimetables} style={{ marginBottom: 0 }}>
+          🔄 Refresh timetable
+        </button>
+      </div>
 
       {/* Tabs */}
       <div className="tabs">
@@ -206,14 +276,38 @@ export default function Timetable() {
                 return (
                   <>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                      <h3>{sem.label} Timetable</h3>
-                      {role === 'admin' && (
-                        <button onClick={async ()=>{
-                          if(!confirm('Delete this semester timetable?')) return;
-                          setStudentTimetables(s=>{ const copy = {...s}; delete copy[selectedSemester]; return copy; });
-                          try{ await axios.delete(`/api/timetable/student/${selectedSemester}`, { headers }); }catch(e){}
-                        }}>Delete Timetable</button>
-                      )}
+                        <h3>{sem.label} Timetable</h3>
+                        {role === 'admin' && (
+                          <div>
+                            <button onClick={async ()=>{
+                              if(!confirm('Delete this semester timetable?')) return;
+                              setStudentTimetables(s=>{ const copy = {...s}; delete copy[selectedSemester]; return copy; });
+                              try{ await axios.delete(`${API_BASE}/timetable/student/${selectedSemester}`, { headers }); }catch(e){}
+                            }}>Delete Timetable</button>
+                            <button style={{marginLeft:8}} onClick={async ()=>{
+                              try{
+                                await axios.post(`${API_BASE}/timetable/student/${selectedSemester}/publish`, {}, { headers });
+                                // refresh server data (only merge non-empty server timetables)
+                                const stu = await axios.get(`${API_BASE}/timetable/student`, { headers });
+                                if (Array.isArray(stu.data)){
+                                  const mapped = {};
+                                  stu.data.forEach((doc) => {
+                                    const serverData = doc.data || {};
+                                    if (Object.keys(serverData).length > 0) {
+                                      mapped[doc.semKey] = {
+                                        label: doc.label || doc.semKey,
+                                        image: doc.image || "",
+                                        data: serverData
+                                      };
+                                    }
+                                  });
+                                  if (Object.keys(mapped).length > 0) setStudentTimetables((s) => ({ ...s, ...mapped }));
+                                }
+                                alert('Published successfully');
+                              }catch(e){ alert('Publish failed'); }
+                            }}>Publish</button>
+                          </div>
+                        )}
                     </div>
                     <Table data={sem.data} semKey={selectedSemester} onEdit={updateStudentSlot} isAdmin={role === 'admin'} />
                   </>
@@ -255,6 +349,38 @@ export default function Timetable() {
                 <div></div>
                 {role === 'admin' && <div>
                   <button onClick={()=> deleteStaff(selectedStaff.id)} style={{marginLeft:8}}>Delete Timetable</button>
+                  <button onClick={async ()=>{
+                    try{
+                      await axios.post(`${API_BASE}/timetable/staff/${selectedStaff.id}/publish`, {}, { headers });
+                      // refresh staff list
+                      const staffRes = await axios.get(`${API_BASE}/timetable/staff`, { headers });
+                      if (Array.isArray(staffRes.data)){
+                        const mapped = staffRes.data
+                          .map((doc) => {
+                            const tt = doc.timetable || {};
+                            if (Object.keys(tt).length === 0) return null;
+                            return {
+                              id: doc.staffId,
+                              name: doc.name || `Staff ${doc.staffId}`,
+                              photo: doc.photo || "https://via.placeholder.com/80",
+                              timetable: tt
+                            };
+                          })
+                          .filter(Boolean);
+                        if (mapped.length > 0) {
+                          // merge by id, prefer server timetable
+                          setStaffList((prev) => {
+                            const byId = Object.fromEntries(prev.map((p) => [p.id, p]));
+                            mapped.forEach((m) => {
+                              byId[m.id] = { ...(byId[m.id] || {}), ...m };
+                            });
+                            return Object.values(byId);
+                          });
+                        }
+                      }
+                      alert('Published successfully');
+                    }catch(e){ alert('Publish failed'); }
+                  }} style={{marginLeft:8}}>Publish</button>
                 </div>}
               </div>
               <Table data={selectedStaff.timetable} staffId={selectedStaff.id} onEdit={updateStaffSlot} isAdmin={role === 'admin'} />

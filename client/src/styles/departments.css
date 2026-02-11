@@ -30,6 +30,43 @@
   margin: auto;
 }
 
+/* ===== ADMIN ADD BOX ===== */
+.dept-admin-add {
+  max-width: 700px;
+  margin: 0 auto 26px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+.dept-admin-add .dept-input {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.dept-admin-add .dept-input:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.dept-admin-add .dept-add-btn {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg,#2563eb,#9333ea);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* ===== CARD ===== */
 .dept-card {
   position: relative;
