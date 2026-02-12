@@ -1,10 +1,5 @@
 /* Page Container */
-.auditoriums {
-  padding: 30px;
-  min-height: 100vh;
-  background: linear-gradient(120deg, #f4f7ff, #eef2ff);
-  font-family: "Segoe UI", system-ui, sans-serif;
-}
+.auditoriums { padding: 30px; min-height: 100vh; background: linear-gradient(120deg, #f7f4ea, #efe9dd); font-family: Inter, system-ui, sans-serif; }
 
 /* Title */
 .auditoriums h2 {
@@ -27,9 +22,7 @@
 }
 
 /* Header */
-.auditoriums thead {
-  background: linear-gradient(90deg, #5b5fdc, #7c7cff);
-}
+.auditoriums thead { background: linear-gradient(90deg, var(--primary), var(--accent)); }
 
 .auditoriums th {
   padding: 16px;
@@ -63,16 +56,13 @@
 }
 
 .auditoriums tbody tr:hover {
-  background: #eef1ff;
+  background: #f3efe2;
   transform: scale(1.01);
   box-shadow: 0 6px 12px rgba(0,0,0,0.06);
 }
 
 /* Capacity Badge */
-.auditoriums td:nth-child(2) {
-  font-weight: 600;
-  color: #4b50d8;
-}
+.auditoriums td:nth-child(2) { font-weight: 600; color: var(--primary); }
 
 /* Location Pill */
 .auditoriums td:nth-child(3) {
@@ -107,10 +97,7 @@
   font-size: 14px;
 }
 
-.hall-input:focus {
-  border-color: #4b50d8;
-  outline: none;
-}
+.hall-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(27,67,50,.15); }
 
 .hall-actions {
   display: flex;
@@ -118,15 +105,7 @@
   margin-top: 12px;
 }
 
-.hall-add-btn {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(90deg,#5b5fdc,#7c7cff);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
+.hall-add-btn { padding: 10px 16px; border-radius: 10px; border: none; background: linear-gradient(90deg,var(--primary),var(--accent)); color: #fff; font-weight: 700; cursor: pointer; }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {

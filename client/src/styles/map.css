@@ -1,1 +1,313 @@
-.map-page .map-placeholder{height:300px;background:#ddd;border:1px dashed #bbb;display:flex;align-items:center;justify-content:center}
+/* ========== Map Page — Professional Layout ========== */
+.map-page {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 56px);
+  min-height: 400px;
+  background: #0f172a;
+}
+
+.map-page .map-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.map-page .map-wrapper .leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+/* ========== Floating Control Panel ========== */
+.map-page .map-panel { position: absolute; top: 20px; left: 20px; z-index: 1000; width: 100%; max-width: 380px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-2); overflow: hidden; border: 1px solid var(--border); }
+
+.map-page .map-panel-header {
+  padding: 20px 20px 16px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  color: #fff;
+}
+
+.map-page .map-panel-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px 0;
+}
+
+.map-page .map-panel-header p {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  margin: 0;
+}
+
+.map-page .map-panel-body {
+  padding: 20px;
+}
+
+/* ========== Form Fields ========== */
+.map-page .map-field {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.map-page .map-field-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.map-page .map-input-wrap {
+  position: relative;
+}
+
+.map-page .map-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 44px 0 14px;
+  font-size: 0.9375rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.map-page .map-input::placeholder {
+  color: #94a3b8;
+}
+
+.map-page .map-input:hover {
+  border-color: #cbd5e1;
+}
+
+.map-page .map-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+
+.map-page .map-input-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* ========== Suggestions Dropdown ========== */
+.map-page .map-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 2000;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+}
+
+.map-page .map-suggestion-item {
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: #334155;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map-page .map-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.map-page .map-suggestion-item:hover {
+  background: #f1f5f9;
+}
+
+.map-page .map-suggestion-item .pin {
+  color: #2563eb;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ========== Actions ========== */
+.map-page .map-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.map-page .map-btn {
+  flex: 1;
+  height: 48px;
+  padding: 0 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.map-page .map-btn:active {
+  transform: scale(0.98);
+}
+
+.map-page .map-btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+.map-page .map-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+.map-page .map-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.map-page .map-btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.map-page .map-btn-secondary:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* ========== Route Summary Card ========== */
+.map-page .map-route-card {
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+}
+
+.map-page .map-route-card.same-location {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.map-page .map-route-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.map-page .map-route-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.map-page .map-route-row:first-child {
+  padding-top: 0;
+}
+
+.map-page .map-route-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.map-page .map-route-value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.map-page .map-route-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0369a1;
+  background: rgba(2, 132, 199, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+}
+
+.map-page .map-route-card.same-location .map-route-badge {
+  color: #64748b;
+  background: #e2e8f0;
+}
+
+/* ========== Loading State ========== */
+.map-page .map-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: #475569;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.map-page .map-loading-dot {
+  width: 8px;
+  height: 8px;
+  background: #2563eb;
+  border-radius: 50%;
+  animation: map-pulse 1s ease-in-out infinite;
+}
+
+.map-page .map-loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.map-page .map-loading-dot:nth-child(3) { animation-delay: 0.3s; }
+
+.map-page .map-btn .map-loading-text {
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+@keyframes map-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ========== Map Attribution Override ========== */
+.map-page .leaflet-control-attribution {
+  font-size: 10px !important;
+  background: rgba(255,255,255,0.85) !important;
+  padding: 2px 6px !important;
+  border-radius: 4px;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 640px) {
+  .map-page .map-panel {
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    max-width: none;
+  }
+  .map-page .map-actions {
+    flex-direction: column;
+  }
+}

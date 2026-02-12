@@ -1,11 +1,4 @@
-/* Root Theme Variables */
-:root {
-  --primary: #4f46e5;
-  --secondary: #6366f1;
-  --glass: rgba(255,255,255,0.78);
-  --blur: blur(14px);
-  --radius: 14px;
-}
+ 
 
 /* Navbar Shell */
 .nav {
@@ -17,7 +10,7 @@
     rgba(255,255,255,0.85),
     rgba(245,247,255,0.9)
   );
-  backdrop-filter: var(--blur);
+  backdrop-filter: blur(14px);
   box-shadow:
     0 8px 25px rgba(0,0,0,0.08),
     inset 0 1px 0 rgba(255,255,255,0.6);

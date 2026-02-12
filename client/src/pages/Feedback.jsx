@@ -81,12 +81,15 @@ export default function Feedback() {
             <h2 style={{ marginTop: 10 }}>All Visitor Feedback</h2>
             {loading ? <p>Loading...</p> : (
               list.length ? (
-                <div style={{ display: 'grid', gap: 12 }}>
+                <div className="feedback-list">
                   {list.map(c=> (
-                    <div key={c._id} style={{ padding:12, borderRadius:8, background:'#f3f4f6' }}>
-                      <strong>{c.name || 'Anonymous'}</strong> <span style={{ color:'#6b7280' }}>{c.email}</span>
-                      <p style={{ marginTop:8 }}>{c.message}</p>
-                      <small style={{ color:'#6b7280' }}>{new Date(c.createdAt).toLocaleString()}</small>
+                    <div key={c._id} className="feedback-item">
+                      <div className="item-header">
+                        <span className="item-name">{c.name || 'Anonymous'}</span>
+                        <span className="item-email">{c.email}</span>
+                      </div>
+                      <div className="item-msg">{c.message}</div>
+                      <div className="item-time">{new Date(c.createdAt).toLocaleString()}</div>
                     </div>
                   ))}
                 </div>

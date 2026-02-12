@@ -71,7 +71,7 @@ const initialStaffList = [
   {
     id: 2,
     name: "Mr. Nikhil Gajbiye",
-    photo: "https://randomuser.me/api/portraits/men/32.jpg",
+    photo: "https://randomuser.me/api/portraits/men/45.jpg",
     timetable: {
       Monday: ["BT", "—", "BREAK", "BT Lab", "—", "BREAK", "—", "—"],
       Tuesday: ["—", "BT", "BREAK", "—", "BT Lab", "BREAK", "—", "—"],
@@ -130,34 +130,42 @@ export default function Timetable() {
     } catch (e) {
       console.warn("Timetable student fetch failed:", e?.message || e);
     }
-    try {
-      const staffRes = await axios.get(`${API_BASE}/timetable/staff`, { headers });
-      if (Array.isArray(staffRes.data) && staffRes.data.length > 0) {
-        const mapped = staffRes.data
-          .map((doc) => {
-            const tt = doc.timetable || {};
-            if (!tt || typeof tt !== "object" || Object.keys(tt).length === 0) return null;
-            return {
-              id: doc.staffId,
-              name: doc.name || `Staff ${doc.staffId}`,
-              photo: doc.photo || "https://via.placeholder.com/80",
-              timetable: tt
-            };
-          })
-          .filter(Boolean);
-        if (mapped.length > 0) {
-          setStaffList((prev) => {
-            const byId = Object.fromEntries(prev.map((p) => [p.id, p]));
-            mapped.forEach((m) => {
-              byId[m.id] = { ...(byId[m.id] || {}), ...m };
-            });
-            return Object.values(byId);
-          });
-        }
-      }
-    } catch (e) {
-      console.warn("Timetable staff fetch failed:", e?.message || e);
+   try {
+  const staffRes = await axios.get(`${API_BASE}/timetable/staff`, { headers });
+
+  if (Array.isArray(staffRes.data) && staffRes.data.length > 0) {
+
+    const mapped = staffRes.data
+      .map((doc) => {
+        const tt = doc.timetable || {};
+        if (!tt || typeof tt !== "object" || Object.keys(tt).length === 0) return null;
+
+        const existing = staffList.find(s => s.id === doc.staffId);
+
+        return {
+          id: doc.staffId,
+          name: doc.name?.trim() || existing?.name || `Staff ${doc.staffId}`,
+          photo: doc.photo?.trim() || existing?.photo,
+          timetable: tt
+        };
+      })
+      .filter(Boolean);
+
+    if (mapped.length > 0) {
+      setStaffList((prev) => {
+        const byId = Object.fromEntries(prev.map((p) => [p.id, p]));
+        mapped.forEach((m) => {
+          byId[m.id] = { ...(byId[m.id] || {}), ...m };
+        });
+        return Object.values(byId);
+      });
     }
+  }
+
+} catch (e) {
+  console.warn("Timetable staff fetch failed:", e?.message || e);
+}
+
   }, [API_BASE, token]);
 
   useEffect(() => {
@@ -256,7 +264,6 @@ export default function Timetable() {
                   className="card"
                   onClick={() => setSelectedSemester(key)}
                 >
-                  <img src={sem.image} alt={sem.label} />
                   <h4>{sem.label}</h4>
                   <p>View Timetable →</p>
                 </div>
@@ -329,7 +336,22 @@ export default function Timetable() {
                   className="card"
                   onClick={() => setSelectedStaff(staff)}
                 >
-                  <img src={staff.photo} alt={staff.name} />
+               <img
+  src={
+    staff.photo && staff.photo.trim() !== ""
+      ? staff.photo
+      : `https://randomuser.me/api/portraits/men/${(staff.id * 23) % 99}.jpg`
+  }
+  alt={staff.name}
+  className="staff-avatar"
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = "https://randomuser.me/api/portraits/men/32.jpg";
+  }}
+/>
+
+
+
                   <h4>{staff.name}</h4>
                   <p>View Timetable →</p>
                 </div>
@@ -361,8 +383,8 @@ export default function Timetable() {
                             if (Object.keys(tt).length === 0) return null;
                             return {
                               id: doc.staffId,
-                              name: doc.name || `Staff ${doc.staffId}`,
-                              photo: doc.photo || "https://via.placeholder.com/80",
+          name: doc.name?.trim() || prev.find(p => p.id === doc.staffId)?.name || `Staff ${doc.staffId}`,
+                                photo: doc.photo || "https://via.placeholder.com/80",
                               timetable: tt
                             };
                           })
@@ -468,4 +490,3 @@ function Table({ data, semKey, staffId, onEdit, isAdmin }) {
     </div>
   );
 }
-

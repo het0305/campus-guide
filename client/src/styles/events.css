@@ -1,13 +1,6 @@
 /* ===== ADMIN CREATE EVENT ===== */
 
-.event-admin-box {
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 22px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.1);
-}
+.event-admin-box { max-width: 900px; margin: 30px auto; padding: 22px; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-1); border: 1px solid var(--border); }
 
 .event-admin-box h2 {
   text-align: center;
@@ -23,13 +16,7 @@
 }
 
 .event-admin-box input,
-.event-admin-box textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
+.event-admin-box textarea { width: 100%; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border); font-size: 14px; background: var(--surface); color: var(--text); }
 
 .event-admin-box textarea {
   margin-top: 12px;
@@ -44,20 +31,11 @@
   margin-top: 15px;
 }
 
-.event-submit button {
-  padding: 10px 30px;
-  border-radius: 20px;
-  border: none;
-  background: linear-gradient(90deg,#00c6ff,#0072ff);
-  color: white;
-  cursor: pointer;
-}
+.event-submit button { padding: 10px 30px; border-radius: 20px; border: none; background: linear-gradient(90deg,var(--primary),var(--accent)); color: white; cursor: pointer; box-shadow: 0 6px 16px rgba(176,141,87,.3); }
 
 /* ===== EVENTS LIST UI ===== */
 
-.events-page {
-  padding: 24px;
-}
+.events-page { padding: 24px; background: var(--surface-2); }
 
 .events-page h1 {
   text-align: center;
@@ -70,13 +48,7 @@
   gap: 16px;
 }
 
-.event-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
-}
+.event-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-1); }
 
 .event-card h3 {
   margin: 0 0 8px;

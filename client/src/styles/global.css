@@ -1,19 +1,81 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  --primary: #2563eb;
+  --primary-2: #1d4ed8;
+  --accent: #9333ea;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow-1: 0 8px 20px rgba(0,0,0,0.08);
+  --shadow-2: 0 16px 40px rgba(0,0,0,0.12);
 }
-
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-}
-
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; overflow-x: hidden; }
 body {
-  background: radial-gradient(circle at top left, #f0f4ff, #dbeafe);
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #1e293b;
+  background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text);
   line-height: 1.6;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { font-family: inherit; }
+input, textarea { font-family: inherit; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  box-shadow: 0 6px 16px rgba(37,99,235,.35);
+}
+.btn.primary:hover { box-shadow: 0 10px 26px rgba(37,99,235,.5); transform: translateY(-1px); }
+.btn.secondary {
+  color: var(--primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.btn.secondary:hover { background: #f1f5f9; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+.panel {
+  background: rgba(255,255,255,.98);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-2);
+}
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  color: var(--text);
+}
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+textarea.input { height: auto; padding: 12px 14px; }
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: var(--text);
 }

@@ -1,13 +1,5 @@
 /* ===== PAGE BACKGROUND ===== */
-.dept-page {
-  min-height: 100vh;
-  padding: 60px 40px;
-  background:
-    radial-gradient(circle at top left, #dbeafe 0%, transparent 40%),
-    radial-gradient(circle at bottom right, #f0abfc 0%, transparent 40%),
-    linear-gradient(120deg, #f8fafc, #eef2ff);
-  font-family: "Inter", system-ui, sans-serif;
-}
+.dept-page { min-height: 100vh; padding: 60px 40px; background: radial-gradient(circle at top left, #efe9dd 0%, transparent 40%), radial-gradient(circle at bottom right, #f7f4ea 0%, transparent 40%), linear-gradient(120deg, #f7f4ea, #efe9dd); font-family: "Inter", system-ui, sans-serif; }
 
 /* ===== TITLE ===== */
 .dept-page h1 {
@@ -16,7 +8,7 @@
   font-weight: 800;
   letter-spacing: 0.4px;
   margin-bottom: 50px;
-  background: linear-gradient(90deg, #2563eb, #9333ea);
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -57,15 +49,7 @@
   outline: none;
 }
 
-.dept-admin-add .dept-add-btn {
-  padding: 12px 18px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(90deg,#2563eb,#9333ea);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-}
+.dept-admin-add .dept-add-btn { padding: 12px 18px; border-radius: 10px; border: none; background: linear-gradient(90deg,var(--primary),var(--accent)); color: white; font-weight: 700; cursor: pointer; }
 
 /* ===== CARD ===== */
 .dept-card {
@@ -136,6 +120,7 @@
 .dept-card {
   text-rendering: optimizeLegibility;
 }
+
 
 /* ===== MOBILE ===== */
 @media (max-width: 640px) {

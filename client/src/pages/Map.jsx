@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "../styles/map.css";
 
 // Required for routing-machine
 window.L = L;
@@ -60,6 +61,89 @@ const buildings = [
 
 ];
 
+// Straight-line distance in meters (Haversine)
+function haversineDistanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Campus path graph: connect nearby buildings (walking path waypoints), then shortest path
+const MAX_EDGE_M = 520;
+const PATH_FACTOR = 1.2;
+const WALK_SPEED_KMH = 4.8; // ~80 m/min, more accurate for campus walking
+
+// Memoized graph for performance (build once per session)
+let cachedAdj = null;
+function getCampusGraph() {
+  if (cachedAdj) return cachedAdj;
+  const n = buildings.length;
+  const adj = Array.from({ length: n }, () => []);
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const d = haversineDistanceMeters(
+        buildings[i].lat, buildings[i].lng,
+        buildings[j].lat, buildings[j].lng
+      );
+      if (d <= MAX_EDGE_M) {
+        const w = d * PATH_FACTOR;
+        adj[i].push({ to: j, w });
+        adj[j].push({ to: i, w });
+      }
+    }
+  }
+  cachedAdj = adj;
+  return adj;
+}
+
+function dijkstraPath(adj, fromIdx, toIdx) {
+  const n = adj.length;
+  const dist = Array(n).fill(Infinity);
+  const prev = Array(n).fill(-1);
+  const heap = [{ idx: fromIdx, d: 0 }];
+  dist[fromIdx] = 0;
+  while (heap.length) {
+    heap.sort((a, b) => a.d - b.d);
+    const { idx: u, d: du } = heap.shift();
+    if (u === toIdx) break;
+    if (du > dist[u]) continue;
+    for (const { to: v, w } of adj[u]) {
+      const alt = dist[u] + w;
+      if (alt < dist[v]) {
+        dist[v] = alt;
+        prev[v] = u;
+        heap.push({ idx: v, d: alt });
+      }
+    }
+  }
+  const path = [];
+  let cur = toIdx;
+  while (cur !== -1) {
+    path.push(cur);
+    cur = prev[cur];
+  }
+  path.reverse();
+  return { path, totalMeters: dist[toIdx] };
+}
+
+// Get path as array of waypoints and total meters (path distance along campus)
+function getCampusPath(from, to) {
+  const fromIdx = buildings.findIndex((b) => b.name === from.name);
+  const toIdx = buildings.findIndex((b) => b.name === to.name);
+  if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return null;
+  const adj = getCampusGraph();
+  const { path, totalMeters } = dijkstraPath(adj, fromIdx, toIdx);
+  if (totalMeters === Infinity || path.length < 2) return null;
+  const waypoints = path.map((i) => [buildings[i].lat, buildings[i].lng]);
+  return { waypoints, totalMeters };
+}
+
 // 🎯 Auto zoom helper
 function AutoZoomToShop({ shop }) {
   const map = useMap();
@@ -92,9 +176,13 @@ export default function CampusMap() {
   const selectedShop = location.state;
 
   const mapRef = useRef(null);
+  const pathLayerRef = useRef(null);
+  const routeControlRef = useRef(null); // so we can remove correct control when clearing
   const [routeControl, setRouteControl] = useState(null);
   const [distance, setDistance] = useState(null);
   const [time, setTime] = useState(null);
+  const [distanceType, setDistanceType] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
@@ -114,7 +202,21 @@ export default function CampusMap() {
       (b) => b.name.toLowerCase() === text.toLowerCase()
     );
 
-  // 🚶 Find Route
+  // Clear any existing route from map
+  const clearRoute = (map) => {
+    if (!map) return;
+    if (routeControlRef.current) {
+      try { map.removeControl(routeControlRef.current); } catch (_) {}
+      routeControlRef.current = null;
+      setRouteControl(null);
+    }
+    if (pathLayerRef.current) {
+      map.removeLayer(pathLayerRef.current);
+      pathLayerRef.current = null;
+    }
+  };
+
+  // 🚶 Find Route — prefer OSRM walking route; fallback to campus path (building-to-building)
   const handleSearch = () => {
     const map = mapRef.current;
     const from = findBuilding(fromText);
@@ -125,7 +227,21 @@ export default function CampusMap() {
       return;
     }
 
-    if (routeControl) map.removeControl(routeControl);
+    const straightMeters = haversineDistanceMeters(from.lat, from.lng, to.lat, to.lng);
+    if (straightMeters < 5) {
+      clearRoute(map);
+      setDistance("0");
+      setTime(0);
+      setDistanceType("same");
+      setIsSearching(false);
+      return;
+    }
+
+    clearRoute(map);
+    setDistance(null);
+    setTime(null);
+    setDistanceType(null);
+    setIsSearching(true);
 
     const control = L.Routing.control({
       waypoints: [
@@ -142,163 +258,241 @@ export default function CampusMap() {
     }).addTo(map);
 
     control.on("routesfound", (e) => {
-      const meters = e.routes[0].summary.totalDistance;
-      const km = (meters / 1000).toFixed(2);
-      const minutes = Math.round((km / 5) * 60);
-      setDistance(km);
-      setTime(minutes);
+      setIsSearching(false);
+      const route = e.routes?.[0];
+      const meters = route?.summary?.totalDistance;
+      if (meters != null && meters > 10) {
+        const km = (meters / 1000).toFixed(2);
+        const totalTimeSec = route?.summary?.totalTime;
+        const minutes = totalTimeSec != null
+          ? Math.max(1, Math.round(totalTimeSec / 60))
+          : Math.max(1, Math.round((meters / 1000 / (WALK_SPEED_KMH / 60)))); // m -> min at 4.8 km/h
+        setDistance(km);
+        setTime(minutes);
+        setDistanceType("walking");
+      } else {
+        useCampusPathFallback();
+      }
     });
 
+    const useCampusPathFallback = () => {
+      setIsSearching(false);
+      try { map.removeControl(control); } catch (_) {}
+      routeControlRef.current = null;
+      setRouteControl(null);
+      const campus = getCampusPath(from, to);
+      if (campus) {
+        const km = (campus.totalMeters / 1000).toFixed(2);
+        const minutes = Math.max(1, Math.round((campus.totalMeters / 1000) / (WALK_SPEED_KMH / 60)));
+        setDistance(km);
+        setTime(minutes);
+        setDistanceType("campus");
+        const latLngs = campus.waypoints.map(([lat, lng]) => L.latLng(lat, lng));
+        const polyline = L.polyline(latLngs, {
+          color: "#2563eb",
+          weight: 5,
+          opacity: 0.8,
+          dashArray: "10, 10",
+        }).addTo(map);
+        pathLayerRef.current = polyline;
+        map.fitBounds(polyline.getBounds(), { padding: [30, 30], maxZoom: 18 });
+      } else {
+        const m = haversineDistanceMeters(from.lat, from.lng, to.lat, to.lng) * PATH_FACTOR;
+        const km = (m / 1000).toFixed(2);
+        setDistance(km);
+        setTime(Math.max(1, Math.round((m / 1000) / (WALK_SPEED_KMH / 60))));
+        setDistanceType("straight");
+        const polyline = L.polyline(
+          [L.latLng(from.lat, from.lng), L.latLng(to.lat, to.lng)],
+          { color: "#94a3b8", weight: 4, opacity: 0.7, dashArray: "8, 8" }
+        ).addTo(map);
+        pathLayerRef.current = polyline;
+      }
+    };
+
+    control.on("routingerror", () => {
+      setIsSearching(false);
+      useCampusPathFallback();
+    });
+
+    routeControlRef.current = control;
     setRouteControl(control);
   };
 
+  const handleClearRoute = () => {
+    const map = mapRef.current;
+    if (map) clearRoute(map);
+    setIsSearching(false);
+    setDistance(null);
+    setTime(null);
+    setDistanceType(null);
+  };
+
+  const hasRoute = distance != null;
+
   return (
-    <div>
-      {/* Controls */}
-      <div
-        style={{
-          padding: 15,
-          width: "350px",
-          position: "relative",
-          zIndex: 5000,
-          background: "#fff"
-        }}
-      >
-        {/* FROM */}
-        <div style={{ position: "relative" }}>
-          <input
-            style={inputStyle}
-            placeholder="From location..."
-            value={fromText}
-            onChange={(e) => {
-              const v = e.target.value;
-              setFromText(v);
-              setFromSuggestions(getSuggestions(v));
-            }}
+    <div className="map-page">
+      <div className="map-wrapper">
+        <MapContainer
+          ref={mapRef}
+          center={[21.0679, 73.1308]}
+          zoom={18}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="© Esri"
+            maxZoom={20}
           />
-          {fromSuggestions.length > 0 && (
-            <div style={suggestionBox}>
-              {fromSuggestions.map((item, i) => (
-                <div
-                  key={i}
-                  style={suggestionItem}
-                  onClick={() => {
-                    setFromText(item.name);
-                    setFromSuggestions([]);
-                  }}
-                >
-                  📍 {item.name}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* TO */}
-        <div style={{ position: "relative" }}>
-          <input
-            style={inputStyle}
-            placeholder="To location..."
-            value={toText}
-            onChange={(e) => {
-              const v = e.target.value;
-              setToText(v);
-              setToSuggestions(getSuggestions(v));
-            }}
-          />
-          {toSuggestions.length > 0 && (
-            <div style={suggestionBox}>
-              {toSuggestions.map((item, i) => (
-                <div
-                  key={i}
-                  style={suggestionItem}
-                  onClick={() => {
-                    setToText(item.name);
-                    setToSuggestions([]);
-                  }}
-                >
-                  📍 {item.name}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <button onClick={handleSearch} style={btnStyle}>
-          🚶 Find Route
-        </button>
-
-        {distance && time && (
-          <div style={{ marginTop: 8 }}>
-            <strong>Distance:</strong> {distance} km <br />
-            <strong>Estimated Time:</strong> {time} min
-          </div>
-        )}
+          {buildings.map((b, i) => (
+            <Marker key={i} position={[b.lat, b.lng]}>
+              <Popup>{b.name}</Popup>
+            </Marker>
+          ))}
+          <AutoZoomToShop shop={selectedShop} />
+        </MapContainer>
       </div>
 
-      {/* Map */}
-      <MapContainer
-        ref={mapRef}
-        center={[21.0679, 73.1308]}
-        zoom={18}
-        style={{ height: "500px", width: "100%" }}
-      >
-        <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          attribution="© Esri"
-          maxZoom={20}
-        />
+      <div className="map-panel">
+        <div className="map-panel-header">
+          <h1>Campus Map</h1>
+          <p>Get directions between buildings &amp; spots</p>
+        </div>
+        <div className="map-panel-body">
+          <div className="map-field">
+            <label className="map-field-label">From</label>
+            <div className="map-input-wrap">
+              <input
+                type="text"
+                className="map-input"
+                placeholder="Search starting point..."
+                value={fromText}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFromText(v);
+                  setFromSuggestions(getSuggestions(v));
+                }}
+              />
+              <span className="map-input-icon" aria-hidden>📍</span>
+            </div>
+            {fromSuggestions.length > 0 && (
+              <div className="map-suggestions">
+                {fromSuggestions.map((item, i) => (
+                  <div
+                    key={i}
+                    className="map-suggestion-item"
+                    onClick={() => {
+                      setFromText(item.name);
+                      setFromSuggestions([]);
+                    }}
+                  >
+                    <span className="pin">📍</span>
+                    <span>{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {buildings.map((b, i) => (
-          <Marker key={i} position={[b.lat, b.lng]}>
-            <Popup>{b.name}</Popup>
-          </Marker>
-        ))}
+          <div className="map-field">
+            <label className="map-field-label">To</label>
+            <div className="map-input-wrap">
+              <input
+                type="text"
+                className="map-input"
+                placeholder="Search destination..."
+                value={toText}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setToText(v);
+                  setToSuggestions(getSuggestions(v));
+                }}
+              />
+              <span className="map-input-icon" aria-hidden>🎯</span>
+            </div>
+            {toSuggestions.length > 0 && (
+              <div className="map-suggestions">
+                {toSuggestions.map((item, i) => (
+                  <div
+                    key={i}
+                    className="map-suggestion-item"
+                    onClick={() => {
+                      setToText(item.name);
+                      setToSuggestions([]);
+                    }}
+                  >
+                    <span className="pin">📍</span>
+                    <span>{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <AutoZoomToShop shop={selectedShop} />
-      </MapContainer>
+          <div className="map-actions">
+            <button
+              type="button"
+              className="map-btn map-btn-primary"
+              onClick={handleSearch}
+              disabled={isSearching}
+            >
+              {isSearching ? (
+                <>
+                  <span className="map-loading-dot" />
+                  <span className="map-loading-dot" />
+                  <span className="map-loading-dot" />
+                  <span className="map-loading-text">Finding…</span>
+                </>
+              ) : (
+                <>Find route</>
+              )}
+            </button>
+            <button
+              type="button"
+              className="map-btn map-btn-secondary"
+              onClick={handleClearRoute}
+              disabled={!hasRoute && !isSearching}
+            >
+              Clear
+            </button>
+          </div>
+
+          {isSearching && (
+            <div className="map-loading">
+              <span className="map-loading-dot" />
+              <span className="map-loading-dot" />
+              <span className="map-loading-dot" />
+              <span>Finding best route...</span>
+            </div>
+          )}
+
+          {hasRoute && !isSearching && (
+            <div className={`map-route-card ${distanceType === "same" ? "same-location" : ""}`}>
+              <div className="map-route-row">
+                <span className="map-route-label">Distance</span>
+                <span className="map-route-value">
+                  {distanceType === "same"
+                    ? "0 km"
+                    : parseFloat(distance) < 0.1
+                      ? `${Math.round(parseFloat(distance) * 1000)} m`
+                      : `${distance} km`}
+                  {distanceType === "walking" && <span className="map-route-badge">Street route</span>}
+                  {distanceType === "campus" && <span className="map-route-badge">Campus path</span>}
+                  {distanceType === "straight" && <span className="map-route-badge">Direct</span>}
+                  {distanceType === "same" && <span className="map-route-badge">Same location</span>}
+                </span>
+              </div>
+              {distanceType !== "same" && (
+                <div className="map-route-row">
+                  <span className="map-route-label">Est. walking time</span>
+                  <span className="map-route-value">~{time} min</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-// ---------------- STYLES ----------------
-const inputStyle = {
-  width: "100%",
-  height: "44px",
-  fontSize: "16px",
-  padding: "8px 12px",
-  marginBottom: "10px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-};
-
-const suggestionBox = {
-  position: "absolute",
-  top: "48px",
-  left: 0,
-  right: 0,
-  background: "#fff",
-  border: "1px solid #ddd",
-  borderRadius: "6px",
-  maxHeight: "200px",
-  overflowY: "auto",
-  zIndex: 9999,
-  boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-};
-
-const suggestionItem = {
-  padding: "10px",
-  cursor: "pointer",
-  borderBottom: "1px solid #eee",
-};
-
-const btnStyle = {
-  width: "100%",
-  height: "42px",
-  backgroundColor: "#2563eb",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  marginTop: "5px",
-};
