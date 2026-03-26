@@ -134,32 +134,41 @@ export default function Timetable() {
   const staffRes = await axios.get(`${API_BASE}/timetable/staff`, { headers });
 
   if (Array.isArray(staffRes.data) && staffRes.data.length > 0) {
-
-    const mapped = staffRes.data
-      .map((doc) => {
+    setStaffList((prev) => {
+      // Use initialStaffList as base if prev is empty or incomplete
+      const base = prev.length >= initialStaffList.length ? prev : initialStaffList;
+      const byId = Object.fromEntries(base.map((p) => [p.id, p]));
+      
+      staffRes.data.forEach((doc) => {
         const tt = doc.timetable || {};
-        if (!tt || typeof tt !== "object" || Object.keys(tt).length === 0) return null;
+        if (!tt || typeof tt !== "object" || Object.keys(tt).length === 0) return;
 
-        const existing = staffList.find(s => s.id === doc.staffId);
+        const existing = byId[doc.staffId];
+        // Always keep UI names aligned with our known staff identities (avoid stale "Staff 1/3" from DB)
+        const canonical = initialStaffList.find((s) => s.id === doc.staffId);
+        const serverName = doc.name?.trim();
+        const serverPhoto = doc.photo?.trim();
 
-        return {
+        const isServerGeneric =
+          !serverName ||
+          serverName.length === 0 ||
+          serverName.toLowerCase() === `staff ${doc.staffId}` ||
+          serverName.toLowerCase() === `staff ${String(doc.staffId)}`;
+
+        const name = isServerGeneric ? (canonical?.name || existing?.name || `Staff ${doc.staffId}`) : serverName;
+        const photo = serverPhoto && serverPhoto.length > 0 ? serverPhoto : (canonical?.photo || existing?.photo);
+
+        byId[doc.staffId] = {
+          ...(existing || {}),
           id: doc.staffId,
-          name: doc.name?.trim() || existing?.name || `Staff ${doc.staffId}`,
-          photo: doc.photo?.trim() || existing?.photo,
+          name,
+          photo,
           timetable: tt
         };
-      })
-      .filter(Boolean);
-
-    if (mapped.length > 0) {
-      setStaffList((prev) => {
-        const byId = Object.fromEntries(prev.map((p) => [p.id, p]));
-        mapped.forEach((m) => {
-          byId[m.id] = { ...(byId[m.id] || {}), ...m };
-        });
-        return Object.values(byId);
       });
-    }
+      
+      return Object.values(byId);
+    });
   }
 
 } catch (e) {
@@ -376,29 +385,29 @@ export default function Timetable() {
                       await axios.post(`${API_BASE}/timetable/staff/${selectedStaff.id}/publish`, {}, { headers });
                       // refresh staff list
                       const staffRes = await axios.get(`${API_BASE}/timetable/staff`, { headers });
-                      if (Array.isArray(staffRes.data)){
-                        const mapped = staffRes.data
-                          .map((doc) => {
+                      if (Array.isArray(staffRes.data) && staffRes.data.length > 0){
+                        setStaffList((prev) => {
+                          const base = prev.length >= initialStaffList.length ? prev : initialStaffList;
+                          const byId = Object.fromEntries(base.map((p) => [p.id, p]));
+                          
+                          staffRes.data.forEach((doc) => {
                             const tt = doc.timetable || {};
-                            if (Object.keys(tt).length === 0) return null;
-                            return {
+                            if (!tt || typeof tt !== "object" || Object.keys(tt).length === 0) return;
+                            const existing = byId[doc.staffId];
+                            const serverName = doc.name?.trim();
+                            const name = (serverName && serverName.length > 0) ? serverName : (existing?.name || `Staff ${doc.staffId}`);
+                            const serverPhoto = doc.photo?.trim();
+                            const photo = (serverPhoto && serverPhoto.length > 0) ? serverPhoto : (existing?.photo);
+                            byId[doc.staffId] = {
+                              ...(existing || {}),
                               id: doc.staffId,
-          name: doc.name?.trim() || prev.find(p => p.id === doc.staffId)?.name || `Staff ${doc.staffId}`,
-                                photo: doc.photo || "https://via.placeholder.com/80",
+                              name,
+                              photo,
                               timetable: tt
                             };
-                          })
-                          .filter(Boolean);
-                        if (mapped.length > 0) {
-                          // merge by id, prefer server timetable
-                          setStaffList((prev) => {
-                            const byId = Object.fromEntries(prev.map((p) => [p.id, p]));
-                            mapped.forEach((m) => {
-                              byId[m.id] = { ...(byId[m.id] || {}), ...m };
-                            });
-                            return Object.values(byId);
                           });
-                        }
+                          return Object.values(byId);
+                        });
                       }
                       alert('Published successfully');
                     }catch(e){ alert('Publish failed'); }

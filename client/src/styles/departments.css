@@ -85,6 +85,7 @@
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.35s ease;
+  pointer-events: none;
 }
 
 /* ===== SOFT LIGHT GLOW ===== */
@@ -95,6 +96,13 @@
   background: radial-gradient(circle, rgba(99,102,241,0.18), transparent 70%);
   opacity: 0;
   transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+/* Keep interactive controls above decorative overlays */
+.dept-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== HOVER EFFECT ===== */

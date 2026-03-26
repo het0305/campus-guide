@@ -22,20 +22,50 @@ export default function Departments(){
 
   const addDept = async ()=>{
     if(!newName) return alert('Enter name');
-    const res = await axios.post('/api/departments', { name: newName }, { headers });
-    setDepartments(s=>[...s, res.data]);
-    setNewName('');
+    try{
+      const res = await axios.post('/api/departments', { name: newName }, { headers });
+      setDepartments(s=>[...s, res.data]);
+      setNewName('');
+    }catch(err){
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Unknown error';
+      alert(`Failed to add department: ${msg}`);
+      throw err;
+    }
   };
 
   const deleteDept = async (id)=>{
     if(!confirm('Delete this department?')) return;
-    await axios.delete(`/api/departments/${id}`, { headers });
-    setDepartments(s=> s.filter(d=> d._id !== id));
+    try{
+      await axios.delete(`/api/departments/${id}`, { headers });
+      setDepartments(s=> s.filter(d=> d._id !== id));
+    }catch(err){
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Unknown error';
+      alert(`Failed to delete department: ${msg}`);
+      throw err;
+    }
   };
 
   const updateDept = async (id, name)=>{
-    const res = await axios.put(`/api/departments/${id}`, { name }, { headers });
-    setDepartments(s=> s.map(d=> d._id === id ? res.data : d));
+    try{
+      const res = await axios.put(`/api/departments/${id}`, { name }, { headers });
+      setDepartments(s=> s.map(d=> d._id === id ? res.data : d));
+    }catch(err){
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Unknown error';
+      alert(`Failed to update department: ${msg}`);
+      throw err;
+    }
   };
 
   return (
@@ -73,7 +103,18 @@ function DeptCard({ dept, isAdmin, onDelete, onSave }){
       {editing ? (
         <div>
           <input value={name} onChange={e=>setName(e.target.value)} />
-          <button onClick={()=>{ onSave(dept._id, name); setEditing(false); }}>Save</button>
+          <button
+            onClick={async () => {
+              try {
+                await onSave(dept._id, name);
+                setEditing(false);
+              } catch (e) {
+                // keep editing open if save fails
+              }
+            }}
+          >
+            Save
+          </button>
           <button onClick={()=> setEditing(false)}>Cancel</button>
         </div>
       ) : (
@@ -82,7 +123,7 @@ function DeptCard({ dept, isAdmin, onDelete, onSave }){
           {isAdmin && (
             <div style={{marginTop:8}}>
               <button onClick={()=> setEditing(true)}>Edit</button>
-              <button onClick={()=> onDelete(dept._id)}>Delete</button>
+              <button onClick={()=> onDelete(dept._id).catch(()=>{})}>Delete</button>
             </div>
           )}
         </>

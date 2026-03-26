@@ -60,6 +60,27 @@
   margin-bottom: 10px;
 }
 
+/* ===== ADMIN EDIT/DELETE CONTROLS ===== */
+.event-admin-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.event-admin-actions button {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.event-admin-actions button:hover {
+  background: #f3f4f6;
+}
+
 /* MOBILE */
 
 @media(max-width:768px){

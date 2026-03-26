@@ -19,6 +19,7 @@ import RoleSelect from "./pages/RoleSelect";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import Visitor from "./pages/Visitor";
+import Register from "./pages/Register";
 
 import "leaflet/dist/leaflet.css";
 
@@ -45,6 +46,7 @@ export default function App() {
 
         {/* Admin */}
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/admin"
           element={

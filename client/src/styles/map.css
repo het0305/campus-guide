@@ -20,7 +20,8 @@
 }
 
 /* ========== Floating Control Panel ========== */
-.map-page .map-panel { position: absolute; top: 20px; left: 20px; z-index: 1000; width: 100%; max-width: 380px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-2); overflow: hidden; border: 1px solid var(--border); }
+.map-page .map-panel { position: absolute; top: 20px; left: 20px; z-index: 1000; width: 100%; max-width: 380px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-2); overflow: visible; border: 1px solid var(--border); }
+.map-page .map-panel-body { overflow: visible; }
 
 .map-page .map-panel-header {
   padding: 20px 20px 16px;
